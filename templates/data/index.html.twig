@@ -1,8 +1,22 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello DataController!{% endblock %}
+{% block title %}Import Excel{% endblock %}
 
 {% block body %}
+    <div class="container-fluid">
+        {{ form_start(importExcelForm) }}
+
+        <div class="input-group p-5">
+            {{ form_widget(importExcelForm.file, { 'attr': {'accept': '.xlsx, .xls'} }) }}
+            <button class="btn btn-secondary" type="submit" id="inputGroupFileAddon04">Importer</button>
+        </div>
+
+        <div class="my-custom-class-for-errors">
+            {{ form_errors(importExcelForm) }}
+        </div>
+
+        {{ form_end(importExcelForm) }}
+    </div>
 <style>
     .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
     .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
