@@ -6,36 +6,75 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class ImportDataFromExcel extends ImportExcelService
 {
-    const MAX_COL = 35;
-
     public function __construct(
         protected EntityManagerInterface $entityManager,
     ) {}
+
+    /**
+     * Check if the column title is listed in the valid column titles
+     * @param string $columnName
+     * @return bool
+     */
+    function checkIfIsAValidColumnTitle(string $columnName): bool
+    {
+        $possibleColumnTitle = [
+            "Compte Affaire", "Compte évènement (Veh)", "Compte dernier évènement (Veh)", "Numéro de fiche",
+            "Libellé civilité", "Propriétaire actuel du véhicule", "Nom", "Prénom", "N° et Nom de la voie",
+            "Complément adresse 1", "Code postal", "Ville", "Téléphone domicile", "Téléphone portable",
+            "Téléphone job", "Email", "Date de mise en circulation", "Date achat (date de livraison)",
+            "Date dernier évènement (Veh)", "Libellé marque (Mrq)", "Libellé modèle (Mod)", "Version",
+            "VIN", "Immatriculation", "Type de prospect", "Kilométrage", "Libellé énergie (Energ)",
+            "Vendeur VN", "Vendeur VO", "Commentaire de facturation (Veh)", "Type VN VO", "Numéro de dossier VN VO",
+            "Intermediaire de vente VN", "Date évènement (Veh)", "Origine évènement (Veh)"
+        ];
+
+        $searchTermLowercase = strtolower(trim($columnName));
+
+        return in_array($searchTermLowercase, array_map('strtolower', $possibleColumnTitle));
+    }
 
     public function run($file, $dir): array
     {
         $dataExcel = $this->import($file, $dir);
 
-        $errorMessage = [];
-        $successMessages = [];
+        [$headers, $reader] = $dataExcel;
 
-        $sheetCount = $dataExcel['loader']->getSheetCount();
+        $colToSkip = [];
+
+        foreach ($headers as $index => $title){
+            if(!$this->checkIfIsAValidColumnTitle($title)) $colToSkip[] = $index;
+        }
+
+        foreach ($reader->getSheetIterator() as $sheet) {
+            foreach ($sheet->getRowIterator() as $row) {
+                $cells = $row->getCells();
+                dump($row->getCells());
+            }
+            dump('');
+        }
+
+        $dataExcel->close();
+        dd('---------------------------------');
+//        $errorMessage = [];
+//        $successMessages = [];
+//
+//        $sheetCount = $dataExcel['loader']->getSheetCount();
 
         $en_count   = 0;
-        if ($sheetCount > 0) {
-            for ($i=0; $i < $sheetCount; $i++) {
-                $sheetResult = $this->getArrayDataBySheet($dataExcel['loader'], $i);
-
-                if ($sheetResult) {
-                    foreach ($sheetResult as $key => $data) {
-                        if ($key >= 1) {
-                            dump(
-                                $data[0], $data[1], $data[2], $data[3], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9],
-                                $data[10], $data[11], $data[12], $data[13], $data[14], $data[15], $data[16], $data[17], $data[18], $data[19],
-                                $data[20], $data[21], $data[22], $data[23], $data[24], $data[25], $data[26], $data[27], $data[28], $data[29],
-                                $data[30], $data[31], $data[32], $data[33], $data[34]
-                            );
-                            dump('------------------------------');
+//        if ($sheetCount > 0) {
+//            for ($i=0; $i < $sheetCount; $i++) {
+//                $sheetResult = $this->getArrayDataBySheet($dataExcel['loader'], $i);
+//
+//                if ($sheetResult) {
+//                    foreach ($sheetResult as $key => $data) {
+//                        if ($key >= 1) {
+//                            dump(
+//                                $data[0], $data[1], $data[2], $data[3], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9],
+//                                $data[10], $data[11], $data[12], $data[13], $data[14], $data[15], $data[16], $data[17], $data[18], $data[19],
+//                                $data[20], $data[21], $data[22], $data[23], $data[24], $data[25], $data[26], $data[27], $data[28], $data[29],
+//                                $data[30], $data[31], $data[32], $data[33], $data[34]
+//                            );
+//                            dump('------------------------------');
 //                            if (!empty($data)) {
 //                                $user = $this->userRepo->findOneBy(['email'=>$data[2]]);
 //
@@ -60,16 +99,16 @@ class ImportDataFromExcel extends ImportExcelService
 //                                    }
 //                                }
 //                            }
-                        }
-                    }
-                    if ($en_count == 0) {
-                        $errorMessage[] = 'Aucune solde modifiée, veuillez vérifier le fichier s\'il vous plaît';
-                    }else{
-                        $successMessages[] = $en_count .' solde(s) modifiée(s) avec succès';
-                    }
-                }
-            }
-        }
+//                        }
+//                    }
+//                    if ($en_count == 0) {
+//                        $errorMessage[] = 'Aucune solde modifiée, veuillez vérifier le fichier s\'il vous plaît';
+//                    }else{
+//                        $successMessages[] = $en_count .' solde(s) modifiée(s) avec succès';
+//                    }
+//                }
+//            }
+//        }
 
         return [$successMessages, $errorMessage];
     }

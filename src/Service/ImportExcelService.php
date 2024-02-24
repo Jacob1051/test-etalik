@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use Box\Spout\Common\Exception\UnsupportedTypeException;
+use Box\Spout\Reader\Common\Creator\ReaderEntityFactory;
+use Box\Spout\Reader\Exception\ReaderNotOpenedException;
 use Doctrine\ORM\EntityManagerInterface;
 use JetBrains\PhpStorm\ArrayShape;
 use PhpOffice\PhpSpreadsheet\Exception;
@@ -22,9 +25,11 @@ class ImportExcelService
      * @param $dir
      * @param $columns
      * @return array
-     * @throws Exception
+     * @throws UnsupportedTypeException
+     * @throws \Box\Spout\Common\Exception\IOException
+     * @throws ReaderNotOpenedException
      */
-    public function import($excelFile, $dir, $columns = null): array
+    public function import($excelFile, $dir, $columns = null)
     {
         ini_set('max_execution_time', 0);
 
@@ -32,7 +37,7 @@ class ImportExcelService
         $pathPart     = pathinfo($originalName);
         $extension    = $pathPart['extension'];
 
-        if ($extension !== 'xlsx' && $extension !== 'xls' && $extension !== 'xlsm')
+        if (!in_array($extension, ['xlsx', 'xls', 'xlsm']))
             return [
                 'status'  => 'error',
                 'message' => 'Le format de ce fichier est invalide, veuillez importer des fichiers Excel!'
@@ -44,28 +49,42 @@ class ImportExcelService
 
         $filename = $dir . $filenameExcel;
 
-        if ('xlsx' === $extension || 'xlsm' === $extension) {
-            $reader = new Xlsx();
-        } else {
-            $reader = new Xls();
+        $reader = ReaderEntityFactory::createReaderFromFile($filename);
+
+        $reader->open($filename);
+
+        $headers = [];
+
+        foreach ($reader->getSheetIterator() as $sheet) {
+            foreach ($sheet->getRowIterator() as $rowIndex => $row) {
+                if ($rowIndex === 1) {
+                    foreach ($row->getCells() as $cell) {
+                        $headers[] = $cell->getValue();
+                    }
+                    break 2;
+                }
+            }
         }
 
-        $reader->setReadDataOnly(true);
-
-        $loader     = $reader->load($filename);
-
-        if(!$columns)
-            $columns = 'A1:'.$loader->getSheet(0)->getHighestColumn().'1';
-        $headers    = $loader->getSheet(0)->rangeToArray($columns);// retest
-
-        $headers    = isset($headers[0]) && is_array($headers[0]) ? $headers[0] : [];
-
+//        if ('xlsx' === $extension || 'xlsm' === $extension) {
+//            $reader = new Xlsx();
+//        } else {
+//            $reader = new Xls();
+//        }
+//
+//        $reader->setReadDataOnly(true);
+//
+//        $loader     = $reader->load($filename);
+//
+//        if(!$columns)
+//            $columns = 'A1:'.$loader->getSheet(0)->getHighestColumn().'1';
+//        $headers    = $loader->getSheet(0)->rangeToArray($columns);// retest
+//
+//        $headers    = isset($headers[0]) && is_array($headers[0]) ? $headers[0] : [];
+//
         @unlink($filename);
 
-        return [
-            'header' => $headers,
-            'loader' => $loader
-        ];
+        return [ $headers, $reader ];
     }
 
     /**
