@@ -2,6 +2,11 @@
 
 {% block title %}Import Excel{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jq-3.2.1/dt-1.10.16/datatables.min.css"/>
+{% endblock %}
+
 {% block body %}
     <div class="container-fluid">
         {{ form_start(importExcelForm) }}
@@ -16,19 +21,39 @@
         </div>
 
         {{ form_end(importExcelForm) }}
+
+        <div class="table-container table-responsive" style="height: calc(100vh - 250px);">
+            <table class="table table-hover my-1 fixed-thead" id="dt-vehicle" data-edit-url="test" data-delete-url="{{ path('app_data_delete', {id: 'id'}) }}">
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    {% for title in colTitle %}
+                        <th scope="col">{{ title }}</th>
+                    {% endfor %}
+                    <th scope="col" class="text-center">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="align-middle table-salary">
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th colspan="35">
+                        <nav id="datatablePagination">
+                            <div class="dataTables_paginate paging_simple_numbers"
+                                 id="dt-vehicle_custom_datatable_paginate">
+                            </div>
+                        </nav>
+                    </th>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
     </div>
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>/var/www/symfony/test-etalik/src/Controller/DataController.php</code></li>
-        <li>Your template at <code>/var/www/symfony/test-etalik/templates/data/index.html.twig</code></li>
-    </ul>
-</div>
 {% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('datatable') }}
+{% endblock %}
+
+

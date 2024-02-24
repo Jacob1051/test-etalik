@@ -4,6 +4,7 @@
         "@babel/preset-env": "^7.16.0",
         "@symfony/webpack-encore": "^4.0.0",
         "core-js": "^3.23.0",
+        "jquery": "^3.7.1",
         "node-sass": "^9.0.0",
         "regenerator-runtime": "^0.13.9",
         "sass-loader": "^14.1.1",
@@ -21,6 +22,9 @@
     },
     "dependencies": {
         "@symfony/stimulus-bridge": "^3.2.2",
-        "bootstrap": "^5.3.3"
+        "bootstrap": "^5.3.3",
+        "datatables.net-bs5": "^2.0.0",
+        "datatables.net-fixedcolumns": "^5.0.0",
+        "datatables.net-fixedheader": "^4.0.0"
     }
 }

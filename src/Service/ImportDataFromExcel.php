@@ -33,6 +33,11 @@ class ImportDataFromExcel extends ImportExcelService
         protected EntityManagerInterface $entityManager
     ) {}
 
+    public function getColTitle(): array
+    {
+        return self::POSSIBLE_COLUMN_TITLE;
+    }
+
     function getValidColumnIndex(string $columnName): ?int
     {
         $searchTermLowercase = strtolower(trim($columnName));
