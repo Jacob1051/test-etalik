@@ -28,8 +28,9 @@ class ImportExcelService
      * @throws UnsupportedTypeException
      * @throws \Box\Spout\Common\Exception\IOException
      * @throws ReaderNotOpenedException
+     * @throws \Exception
      */
-    public function import($excelFile, $dir, $columns = null)
+    public function import($excelFile, $dir)
     {
         ini_set('max_execution_time', 0);
 
@@ -38,10 +39,7 @@ class ImportExcelService
         $extension    = $pathPart['extension'];
 
         if (!in_array($extension, ['xlsx', 'xls', 'xlsm']))
-            return [
-                'status'  => 'error',
-                'message' => 'Le format de ce fichier est invalide, veuillez importer des fichiers Excel!'
-            ];
+            throw new \Exception('Le format de ce fichier est invalide, veuillez importer des fichiers Excel!');
 
         $filenameExcel = md5(uniqid()) . '.' . $extension;
 
@@ -66,45 +64,8 @@ class ImportExcelService
             }
         }
 
-//        if ('xlsx' === $extension || 'xlsm' === $extension) {
-//            $reader = new Xlsx();
-//        } else {
-//            $reader = new Xls();
-//        }
-//
-//        $reader->setReadDataOnly(true);
-//
-//        $loader     = $reader->load($filename);
-//
-//        if(!$columns)
-//            $columns = 'A1:'.$loader->getSheet(0)->getHighestColumn().'1';
-//        $headers    = $loader->getSheet(0)->rangeToArray($columns);// retest
-//
-//        $headers    = isset($headers[0]) && is_array($headers[0]) ? $headers[0] : [];
-//
-        @unlink($filename);
+//        @unlink($filename);
 
         return [ $headers, $reader ];
-    }
-
-    /**
-     * @param $loader
-     * @param $sheetNum
-     * @return array
-     */
-    #[ArrayShape(['sheet_name' => 'mixed', 'data' => 'mixed'])]
-    public function getArrayDataBySheet($loader, $sheetNum): array
-    {
-        $activeSheet = $loader->getSheet($sheetNum);
-        $sheet       = $activeSheet->toArray();
-        $dataBody    = array_filter($sheet);
-
-        array_shift($dataBody);
-
-        // remove null array value
-        return array_filter($dataBody, function ($value) {
-            if (!empty(array_filter($value)))
-                return $value;
-        });
     }
 }

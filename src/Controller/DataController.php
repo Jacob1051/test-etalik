@@ -21,8 +21,9 @@ class DataController extends AbstractController
             $file = $request->files->get('import_excel_form')['file'];
             $dir = $this->getParameter('importedExcelDir');
 
-            [$successMessages, $errorMessages] = $dataFromExcelService->run($file, $dir);
-            dd('ok');
+            [$successMessages, $errorMessages, $value] = $dataFromExcelService->run($file, $dir);
+
+            dd($value, $errorMessages);
 //            if (count($errorMessages) > 0) {
 //                foreach ($errorMessages as $error) {
 //                    $this->addFlash('error', $error);
