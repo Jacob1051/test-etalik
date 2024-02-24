@@ -436,6 +436,13 @@ class VehicleData
         return $this;
     }
 
+    public function setKilometrage1(string $kilometrage): static
+    {
+        $this->kilometrage = floatval($kilometrage);
+
+        return $this;
+    }
+
     public function getLibelleEnergieEnerg(): ?string
     {
         return $this->libelleEnergieEnerg;

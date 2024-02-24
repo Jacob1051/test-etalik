@@ -21,20 +21,19 @@ class DataController extends AbstractController
             $file = $request->files->get('import_excel_form')['file'];
             $dir = $this->getParameter('importedExcelDir');
 
-            [$successMessages, $errorMessages, $value] = $dataFromExcelService->run($file, $dir);
+            [$successMessages, $errorMessages] = $dataFromExcelService->run($file, $dir);
 
-            dd($value, $errorMessages);
-//            if (count($errorMessages) > 0) {
-//                foreach ($errorMessages as $error) {
-//                    $this->addFlash('error', $error);
-//                }
-//            }
-//
-//            if (count($successMessages) > 0) {
-//                foreach ($successMessages as $success) {
-//                    $this->addFlash('success', $success);
-//                }
-//            }
+            if (count($errorMessages) > 0) {
+                foreach ($errorMessages as $error) {
+                    $this->addFlash('error', $error);
+                }
+            }
+
+            if (count($successMessages) > 0) {
+                foreach ($successMessages as $success) {
+                    $this->addFlash('success', $success);
+                }
+            }
         }
 
         return $this->render('data/index.html.twig', [

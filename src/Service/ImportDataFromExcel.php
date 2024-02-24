@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\VehicleData;
+use App\Repository\VehicleDataRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class ImportDataFromExcel extends ImportExcelService
@@ -23,13 +24,13 @@ class ImportDataFromExcel extends ImportExcelService
         "setLibelleCivilite", "setProprietaireActuelDuVehicule", "setNom", "setPrenom", "setNumeroEtNomDeLaVoie",
         "setComplementAdresse1", "setCodePostal", "setVille", "setTelephoneDomicile", "setTelephonePortable", "setTelephoneJob",
         "setEmail", "setDateDeMiseEnCirculation", "setDateAchatDateDeLivraison", "setDateDernierEvenementVeh", "setLibelleMarqueMrq",
-        "setLibelleModeleMod", "setVersion", "setVin", "setImmatriculation", "setTypeDeProspect", "setKilometrage", "setLibelleEnergieEnerg",
+        "setLibelleModeleMod", "setVersion", "setVin", "setImmatriculation", "setTypeDeProspect", "setKilometrage1", "setLibelleEnergieEnerg",
         "setVendeurVN", "setVendeurVO", "setCommentaireDeFacturationVeh", "setTypeVNVO", "setNumeroDeDossierVNVO",
         "setIntermediaireDeVenteVN", "setDateEvenementVeh", "setOrigineEvenementVeh"
     ];
 
     public function __construct(
-        protected EntityManagerInterface $entityManager,
+        protected EntityManagerInterface $entityManager
     ) {}
 
     function getValidColumnIndex(string $columnName): ?int
@@ -47,7 +48,7 @@ class ImportDataFromExcel extends ImportExcelService
 
         $arrangedCol = [];
 
-        $values = [];
+        $countInserted = 0;
 
         foreach ($headers as $index => $title) {
             $tempCol = $this->getValidColumnIndex($title);
@@ -57,7 +58,6 @@ class ImportDataFromExcel extends ImportExcelService
 
             $arrangedCol[] = $tempCol;
         }
-
 
         foreach ($reader->getSheetIterator() as $sheet) {
             foreach ($sheet->getRowIterator() as $rowIndex => $row) {
@@ -69,7 +69,7 @@ class ImportDataFromExcel extends ImportExcelService
                         foreach ($arrangedCol as $colNumber) {
                             $colIndex = $colNumber;
 
-                            if($colNumber){
+                            if($colNumber !== null){
                                 $setterMethod = self::SETTER[$colNumber];
                                 $value = $row->getCellAtIndex($colNumber)->getValue();
                                 $vehicleData->$setterMethod(
@@ -77,68 +77,28 @@ class ImportDataFromExcel extends ImportExcelService
                                 );
                             }
                         }
-                        $values[] = $vehicleData;
+
+                        $this->entityManager->persist($vehicleData);
+                        $this->entityManager->flush();
+
+                        $countInserted += 1;
                     } catch (\Throwable $exception) {
+                        dump($exception->getMessage());
                         $errorMessages[] = 'Donnée '.self::POSSIBLE_COLUMN_TITLE[$colIndex].' invalide au ligne '.$rowIndex;
                         continue;
                     }
                 }
             }
         }
-//
-//        $sheetCount = $dataExcel['loader']->getSheetCount();
 
-        $en_count   = 0;
-//        if ($sheetCount > 0) {
-//            for ($i=0; $i < $sheetCount; $i++) {
-//                $sheetResult = $this->getArrayDataBySheet($dataExcel['loader'], $i);
-//
-//                if ($sheetResult) {
-//                    foreach ($sheetResult as $key => $data) {
-//                        if ($key >= 1) {
-//                            dump(
-//                                $data[0], $data[1], $data[2], $data[3], $data[4], $data[5], $data[6], $data[7], $data[8], $data[9],
-//                                $data[10], $data[11], $data[12], $data[13], $data[14], $data[15], $data[16], $data[17], $data[18], $data[19],
-//                                $data[20], $data[21], $data[22], $data[23], $data[24], $data[25], $data[26], $data[27], $data[28], $data[29],
-//                                $data[30], $data[31], $data[32], $data[33], $data[34]
-//                            );
-//                            dump('------------------------------');
-//                            if (!empty($data)) {
-//                                $user = $this->userRepo->findOneBy(['email'=>$data[2]]);
-//
-//                                if($user and in_array($data[3], DayoffName::DAYOFF_EXCEL_INDEX_ARRAY)){
-//                                    $dayofftype = $this->dayofftypeRepo->findOneBy(['code'=>DayoffName::DAYOFF_EXCEL_ARRAY[$data[3]]]);
-//                                    $initialDayoffStateInDB = $this->initialDayoffStateRepository->findOneBy(['user'=>$user, 'dayofftype'=>$dayofftype, 'refYear'=>$data[7]]);
-//
-//                                    $initialDayoffState = $initialDayoffStateInDB ?? new InitialDayoffState();
-//                                    $initialDayoffState->setUser($user);
-//                                    $initialDayoffState->setDayofftype($dayofftype);
-//                                    $initialDayoffState->setEntreprise($user->getEntreprise());
-//                                    $initialDayoffState->setBalance($data[4]);
-//                                    $initialDayoffState->setReport($data[5]);
-//                                    $initialDayoffState->setTaken($data[6]);
-//                                    $initialDayoffState->setRefYear($data[7]);
-//
-//                                    $inserted = $this->dayOffSservice->modifyUserBalanceFromImport($initialDayoffState);
-//
-//                                    if($inserted){
-//                                        $this->initialDayoffStateRepository->save($initialDayoffState, true);
-//                                        $en_count++;
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                    if ($en_count == 0) {
-//                        $errorMessage[] = 'Aucune solde modifiée, veuillez vérifier le fichier s\'il vous plaît';
-//                    }else{
-//                        $successMessages[] = $en_count .' solde(s) modifiée(s) avec succès';
-//                    }
-//                }
-//            }
-//        }
+        if ($countInserted == 0) {
+            $errorMessages[] = 'Aucune donnée enregistrée, veuillez vérifier le fichier s\'il vous plaît';
+        }else{
+            $successMessages[] = $countInserted .' donnée(s) enregistrée(s) avec succès';
+        }
+
         $reader->close();
 
-        return [$successMessages, $errorMessages, $values];
+        return [$successMessages, $errorMessages];
     }
 }
