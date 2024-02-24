@@ -77,14 +77,12 @@ class ImportDataFromExcel extends ImportExcelService
                                 );
                             }
                         }
-
                         $values[] = $vehicleData;
                     } catch (\Throwable $exception) {
                         $errorMessages[] = 'Donnée '.self::POSSIBLE_COLUMN_TITLE[$colIndex].' invalide au ligne '.$rowIndex;
                         continue;
                     }
                 }
-
             }
         }
 //
