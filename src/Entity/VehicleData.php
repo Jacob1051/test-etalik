@@ -9,6 +9,16 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: VehicleDataRepository::class)]
 class VehicleData
 {
+    CONST TYPEVNVO_CHOICE = [
+        'VN' => 'VN',
+        'VO' => 'VO'
+    ];
+
+    CONST TYPEPROSPECT_CHOICE = [
+        'PARTICULIER' => 'PARTICULIER',
+        'SOCIETE' => 'SOCIETE'
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

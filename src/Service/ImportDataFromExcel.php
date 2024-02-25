@@ -8,6 +8,9 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class ImportDataFromExcel extends ImportExcelService
 {
+    CONST VIN_INDEX = 22;
+
+    //liste de titre accepte
     CONST POSSIBLE_COLUMN_TITLE = [
         "Compte Affaire", "Compte évènement (Veh)", "Compte dernier évènement (Veh)", "Numéro de fiche",
         "Libellé civilité", "Propriétaire actuel du véhicule", "Nom", "Prénom", "N° et Nom de la voie",
@@ -19,6 +22,7 @@ class ImportDataFromExcel extends ImportExcelService
         "Intermediaire de vente VN", "Date évènement (Veh)", "Origine évènement (Veh)"
     ];
 
+    //liste des setter pour chaque titre accepte
     CONST SETTER = [
         "setCompteAffaire", "setCompteEvenementVeh", "setCompteDernierEvenementVeh", "setNumeroDeFiche",
         "setLibelleCivilite", "setProprietaireActuelDuVehicule", "setNom", "setPrenom", "setNumeroEtNomDeLaVoie",
@@ -30,7 +34,8 @@ class ImportDataFromExcel extends ImportExcelService
     ];
 
     public function __construct(
-        protected EntityManagerInterface $entityManager
+        protected EntityManagerInterface $entityManager,
+        protected VehicleDataRepository $vehicleDataRepository
     ) {}
 
     public function getColTitle(): array
@@ -38,6 +43,11 @@ class ImportDataFromExcel extends ImportExcelService
         return self::POSSIBLE_COLUMN_TITLE;
     }
 
+    /**
+     * Check if columnName is a valid column title. Return the index inside POSSIBLE_COLUMN_TITLE otherwise null.
+     * @param string $columnName
+     * @return int|null
+     */
     function getValidColumnIndex(string $columnName): ?int
     {
         $searchTermLowercase = strtolower(trim($columnName));
@@ -46,10 +56,22 @@ class ImportDataFromExcel extends ImportExcelService
         return $index !== false ? $index : null;
     }
 
+
+    /**
+     * Start the process of excel importing. Create a new record if not inside db and update it in the other hand.
+     * Check VIN field for updating.
+     * Return the errors, warnings and success messages encounter during the process.
+     * @param $file
+     * @param $dir
+     * @return array[]
+     * @throws \Box\Spout\Common\Exception\IOException
+     * @throws \Box\Spout\Common\Exception\UnsupportedTypeException
+     * @throws \Box\Spout\Reader\Exception\ReaderNotOpenedException
+     */
     public function run($file, $dir): array
     {
         [$headers, $reader] = $this->import($file, $dir);
-        [$errorMessages, $successMessages] = [[], []];
+        [$errorMessages, $warningMessages, $successMessages] = [[], [], []];
 
         $arrangedCol = [];
 
@@ -68,8 +90,16 @@ class ImportDataFromExcel extends ImportExcelService
             foreach ($sheet->getRowIterator() as $rowIndex => $row) {
                 if($rowIndex > 1) {
                     $colIndex = 0;
+
                     try {
-                        $vehicleData = new VehicleData();
+                        $vin = $row->getCellAtIndex(array_search(self::VIN_INDEX, $arrangedCol))->getValue();
+                        $vehicleDataInDb = $this->vehicleDataRepository->findOneBy(['vin' => $vin]);
+
+                        $vehicleData = $vehicleDataInDb ?? new VehicleData();
+
+                        if($vehicleDataInDb){
+                            $warningMessages[] = sprintf("Ligne %s : Données déjà existantes! Les données sont mises à jour avec les informations du fichier.", $rowIndex + 1);
+                        }
 
                         foreach ($arrangedCol as $colNumber) {
                             $colIndex = $colNumber;
@@ -88,8 +118,7 @@ class ImportDataFromExcel extends ImportExcelService
 
                         $countInserted += 1;
                     } catch (\Throwable $exception) {
-                        dump($exception->getMessage());
-                        $errorMessages[] = 'Donnée '.self::POSSIBLE_COLUMN_TITLE[$colIndex].' invalide au ligne '.$rowIndex;
+                        $errorMessages[] = sprintf('Ligne %s: Donnée "%s" invalide', ($rowIndex+1), self::POSSIBLE_COLUMN_TITLE[$colIndex]);
                         continue;
                     }
                 }
@@ -104,6 +133,6 @@ class ImportDataFromExcel extends ImportExcelService
 
         $reader->close();
 
-        return [$successMessages, $errorMessages];
+        return [$successMessages, $warningMessages, $errorMessages];
     }
 }

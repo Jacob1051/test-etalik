@@ -13,8 +13,8 @@
     "oPaginate": {
         "sFirst": "Premier",
         "sLast": "Dernier",
-        "sNext": "<i class='bi bi bi-chevron-right me-2'></i>",
-        "sPrevious": "<i class='bi bi bi-chevron-left me-2'></i>"
+        "sNext": "<i class='fa fa-chevron-right me-2'></i>",
+        "sPrevious": "<i class='fa fa-chevron-left me-2'></i>"
     },
     "oAria": {
         "sSortAscending": ": activer pour trier la colonne par ordre croissant",

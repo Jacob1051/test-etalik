@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\VehicleData;
+use App\Form\EditVehicleDataType;
 use App\Form\ImportExcelFormType;
 use App\Repository\VehicleDataRepository;
 use App\Service\ImportDataFromExcel;
@@ -32,19 +33,26 @@ class DataController extends AbstractController
 
         if($importExcelForm->isSubmitted() and $importExcelForm->isValid()){
             $file = $request->files->get('import_excel_form')['file'];
-            $dir = $this->getParameter('importedExcelDir');
 
-            [$successMessages, $errorMessages] = $dataFromExcelService->run($file, $dir);
+            [$successMessages, $warningMessages, $errorMessages] = $dataFromExcelService->run($file, $this->getParameter('importedExcelDir'));
 
-            if (count($errorMessages) > 0) {
+            if (!empty($errorMessages)) {
                 foreach ($errorMessages as $error) {
-                    $this->addFlash('error', $error);
+                    $this->addFlash('ctm_danger', $error);
+                }
+            }else{
+                $this->addFlash('success', 'Importation du tableau terminé avec succès.');
+            }
+
+            if (!empty($successMessages)) {
+                foreach ($successMessages as $success) {
+                    $this->addFlash('ctm_success', $success);
                 }
             }
 
-            if (count($successMessages) > 0) {
-                foreach ($successMessages as $success) {
-                    $this->addFlash('success', $success);
+            if (!empty($warningMessages)) {
+                foreach ($warningMessages as $warning) {
+                    $this->addFlash('ctm_warning', $warning);
                 }
             }
         }
@@ -59,12 +67,31 @@ class DataController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/edit', name: 'app_data_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, VehicleData $vehicleData)
+    {
+        $editForm = $this->createForm(EditVehicleDataType::class, $vehicleData);
+        $editForm->handleRequest($request);
+
+        if($editForm->isSubmitted() and $editForm->isValid()) {
+            $this->vehicleDataRepository->save($vehicleData, true);
+
+            $this->addFlash('success', "Donnée modifiée avec succès");
+
+            return $this->redirectToRoute('app_data');
+        }
+
+        return $this->render('data/edit.html.twig', [
+            'editForm'=> $editForm->createView(),
+        ]);
+    }
+
     #[Route('/{id}/delete', name: 'app_data_delete', methods: ['GET'])]
     public function delete(VehicleData $vehicleData)
     {
         $this->vehicleDataRepository->remove($vehicleData, true);
 
-        $this->addFlash('success',sprintf("Donnée supprimé avec succès"));
+        $this->addFlash('success', "Donnée supprimée avec succès");
 
         return $this->redirectToRoute('app_data');
     }

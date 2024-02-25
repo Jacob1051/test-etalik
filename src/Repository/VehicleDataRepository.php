@@ -47,17 +47,31 @@ class VehicleDataRepository extends ServiceEntityRepository
     #[ArrayShape(['data' => "array", 'recordsTotal' => "int", 'recordsFiltered' => "int"])]
     public function findUsedByDatatable(Request $request)
     {
-        $qb = $this->createQueryBuilder('jd')
-            ->select('jd')
+        $qb = $this->createQueryBuilder('vd')
+            ->select('vd')
         ;
 
         $qbTotal = $this->createQueryBuilder('vd')
             ->select('count(vd.id)')
         ;
 
-        $where = "j.name LIKE :search";
+        $query = $request->query->all();
 
-        return $this->getDataWithFilterDatatable($qb, $qbTotal, $where, $request, ['j.name', 'ASC']);
+        if($query['filterField']){
+            $filter    = $query['filterField'];
+
+            foreach ($filter as $key => $value) {
+                if($value) {
+                    $qb->andWhere("$key LIKE :search")
+                        ->setParameter("search", "%$value%");
+
+                    $qbTotal->andWhere("$key LIKE :search")
+                        ->setParameter("search", "%$value%");
+                }
+            }
+        }
+
+        return $this->getDataWithFilterDatatable($qb, $qbTotal, $request, []);
     }
 
 
@@ -71,31 +85,25 @@ class VehicleDataRepository extends ServiceEntityRepository
      * @throws NonUniqueResultException
      */
     #[ArrayShape(['data' => "array", 'recordsTotal' => "int", 'recordsFiltered' => "int"])]
-    public function getDataWithFilterDatatable(QueryBuilder $qb, QueryBuilder $qbTotal, $where, Request $request = null, $orderBy = []): array
+    public function getDataWithFilterDatatable(QueryBuilder $qb, QueryBuilder $qbTotal, Request $request = null, $orderBy = []): array
     {
         $qbTotalFilter = clone $qbTotal;
 
         if ($request) {
             $query = $request->query->all();
 
-
             if (isset($query['start'], $query['length'], $query['order_by'], $query['search']['value'])) {
                 $page      = $query['start'];
                 $nbMaxPage = $query['length'];
                 $search    = $query['search']['value'] ?? '';
+                $orderBy   = $query['order_by'] ? explode(' ', $query['order_by']) : ['vd.id', 'ASC'];
 
-                if (empty($orderBy)) {
-                    $orderBy   = $query['order_by'] ? explode(' ', $query['order_by']) : ['id', 'DESC'];
-                }
-
-//                $qb->andWhere($where)
-//                    ->setParameter('search', "%$search%")
-//                    ->setFirstResult($page)
-//                    ->setMaxResults($nbMaxPage)
-//                    ->orderBy($orderBy[0], $orderBy[1]);
+                if($orderBy[0] === 'id')
+                    $orderBy[0] = 'vd.id';
 
                 $qb->setFirstResult($page)
-                    ->setMaxResults($nbMaxPage);
+                    ->setMaxResults($nbMaxPage)
+                    ->orderBy($orderBy[0], $orderBy[1]);
 
 //                $qbTotalFilter->andWhere($where)
 //                    ->setParameter('search', "%$search%");

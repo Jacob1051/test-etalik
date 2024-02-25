@@ -21,6 +21,8 @@ class ImportExcelService
     }
 
     /**
+     * Standardized excel importation method.
+     * Return an array containing the headers(titles) and the reader(excel data).
      * @param $excelFile
      * @param $dir
      * @param $columns
@@ -30,7 +32,7 @@ class ImportExcelService
      * @throws ReaderNotOpenedException
      * @throws \Exception
      */
-    public function import($excelFile, $dir)
+    public function import($excelFile, $dir): array
     {
         ini_set('max_execution_time', 0);
 
@@ -63,8 +65,6 @@ class ImportExcelService
                 }
             }
         }
-
-//        @unlink($filename);
 
         return [ $headers, $reader ];
     }

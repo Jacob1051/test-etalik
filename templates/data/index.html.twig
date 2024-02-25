@@ -9,42 +9,130 @@
 
 {% block body %}
     <div class="container-fluid">
+        {% for label, messages in app.flashes(['ctm_danger', 'ctm_warning', 'ctm_success']) %}
+            {% for message in messages %}
+                <div class="col-12 mt-2">
+                    <div class="alert
+                            {% if label == 'ctm_success' %} alert-success
+                            {% elseif label == 'ctm_warning' %} alert-warning
+                            {% elseif label == 'ctm_danger' %} alert-danger {% endif %}
+                            alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
         {{ form_start(importExcelForm) }}
 
         <div class="input-group p-5">
             {{ form_widget(importExcelForm.file, { 'attr': {'accept': '.xlsx, .xls'} }) }}
-            <button class="btn btn-secondary" type="submit" id="inputGroupFileAddon04">Importer</button>
+            <button class="btn btn-secondary" type="submit">Importer</button>
         </div>
 
-        <div class="my-custom-class-for-errors">
+        <div class="text-bg-warning">
             {{ form_errors(importExcelForm) }}
         </div>
 
         {{ form_end(importExcelForm) }}
 
+        <div class="row p-5">
+            <div class="col-md-6">
+                <table class="inputs">
+                    <tbody>
+                    <tr>
+                        <td>Numero de fiche:</td>
+                        <td><input type="text" id="numFiche" name="numFiche" class="form-control"></td>
+                    </tr>
+                    <tr>
+                        <td>Civilite:</td>
+                        <td>
+                            <select name="civilite" id="civilite" class="form-select">
+                                <option value="">---</option>
+                                <option value="Mr">Mr</option>
+                                <option value="Mme">Mme</option>
+                                <option value="Ste">Ste</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Marque:</td>
+                        <td>
+                            <select name="marque" id="marque" class="form-select">
+                                <option value="">---</option>
+                                <option value="HYUNDAI">HYUNDAI</option>
+                                <option value="PEUGEOT">PEUGEOT</option>
+                                <option value="SUZUKI">SUZUKI</option>
+                                <option value="TOYOTA">TOYOTA</option>
+                                <option value="AUDI">AUDI</option>
+                                <option value="VOLKSWAGEN">VOLKSWAGEN</option>
+                            </select>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-md-6">
+                <table class="inputs">
+                    <tbody>
+                        <tr>
+                            <td>Vin:</td>
+                            <td><input type="text" id="vin" name="vin" class="form-control"></td>
+                        </tr>
+                        <tr>
+                            <td>Type de prospect:</td>
+                            <td>
+                                <select name="typeProspect" id="typeProspect" class="form-select">
+                                    <option value="">---</option>
+                                    <option value="SOCIETE">SOCIETE</option>
+                                    <option value="PARTICULIER">PARTICULIER</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Kilometrage:</td>
+                            <td><input type="number" id="kilometrage" name="kilometrage" class="form-control"></td>
+                        </tr>
+                        <tr>
+                            <td>Type:</td>
+                            <td>
+                                <select name="typeVNVO" id="typeVNVO" class="form-select">
+                                    <option value="">---</option>
+                                    <option value="VN">VN</option>
+                                    <option value="VO">VO</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <input type="button" value="Filtrer" id="filter">
+            </div>
+        </div>
+
         <div class="table-container table-responsive" style="height: calc(100vh - 250px);">
-            <table class="table table-hover my-1 fixed-thead" id="dt-vehicle" data-edit-url="test" data-delete-url="{{ path('app_data_delete', {id: 'id'}) }}">
+            <table class="table table-hover table-bordered my-1 fixed-thead" id="dt-vehicle" data-edit-url="{{ path('app_data_edit', {id: 'id'}) }}" data-delete-url="{{ path('app_data_delete', {id: 'id'}) }}">
                 <thead>
-                <tr>
-                    <th scope="col">ID</th>
-                    {% for title in colTitle %}
-                        <th scope="col">{{ title }}</th>
-                    {% endfor %}
-                    <th scope="col" class="text-center">Actions</th>
-                </tr>
+                    <tr>
+                        <th scope="col">ID</th>
+                        {% for title in colTitle %}
+                            <th scope="col">{{ title }}</th>
+                        {% endfor %}
+                    </tr>
                 </thead>
                 <tbody class="align-middle table-salary">
                 </tbody>
                 <tfoot>
-                <tr>
-                    <th colspan="35">
-                        <nav id="datatablePagination">
-                            <div class="dataTables_paginate paging_simple_numbers"
-                                 id="dt-vehicle_custom_datatable_paginate">
-                            </div>
-                        </nav>
-                    </th>
-                </tr>
+                    <tr>
+                        <th colspan="35">
+                            <nav id="datatablePagination">
+                                <div class="dataTables_paginate paging_simple_numbers"
+                                     id="dt-vehicle_custom_datatable_paginate">
+                                </div>
+                            </nav>
+                        </th>
+                    </tr>
                 </tfoot>
             </table>
         </div>

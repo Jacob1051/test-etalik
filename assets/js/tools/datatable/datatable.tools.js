@@ -14,6 +14,7 @@ class DataTableTools {
         selector,
         url,
         columnDefs,
+        externalData = {},
         isSearchable = true,
         drawCallback = function (settings) {
             $('.date-fr').each(function () {
@@ -46,16 +47,10 @@ class DataTableTools {
                     for (let i = 0; i < self.paramsFilterDatatableDynamic.length; i++) {
                         data[self.paramsFilterDatatableDynamic[i]['key']] = self.paramsFilterDatatableDynamic[i]['value'].val();
                     }
+                    data['filterField'] = [];
 
-                    let container = $(selector).closest('.table-container');
-                    if (container.length) {
-                        $(container).animate({
-                            scrollTop: $(selector).offset().top
-                        }, 500);
-                    } else {
-                        $(selector).animate({
-                            scrollTop: $(selector).offset().top
-                        }, 500);
+                    if(externalData) {
+                        data['filterField'] = externalData;
                     }
                 }
             },
@@ -67,7 +62,7 @@ class DataTableTools {
                 info.appendTo('#'+ selector.attr('id') +'_custom_info');
                 $('#' + selector.attr('id') + '_paginate').appendTo('#' + selector.attr('id') + '_custom_datatable_paginate');
             },
-            createdRow: createdRow
+            createdRow: createdRow,
         });
     }
 
