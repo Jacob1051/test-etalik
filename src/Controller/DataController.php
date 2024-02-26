@@ -7,11 +7,6 @@ use App\Form\EditVehicleDataType;
 use App\Form\ImportExcelFormType;
 use App\Repository\VehicleDataRepository;
 use App\Service\ImportDataFromExcel;
-use Doctrine\ORM\EntityManagerInterface;
-use Omines\DataTablesBundle\Adapter\ArrayAdapter;
-use Omines\DataTablesBundle\Adapter\Doctrine\ORMAdapter;
-use Omines\DataTablesBundle\Column\TextColumn;
-use Omines\DataTablesBundle\DataTableFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,7 +16,6 @@ use Symfony\Component\Routing\Attribute\Route;
 class DataController extends AbstractController
 {
     public function __construct(
-        protected DataTableFactory $dataTableFactory,
         protected VehicleDataRepository $vehicleDataRepository
     ) { }
 
@@ -64,6 +58,25 @@ class DataController extends AbstractController
         return $this->render('data/index.html.twig', [
             'importExcelForm'=> $importExcelForm->createView(),
             'colTitle' => $dataFromExcelService->getColTitle()
+        ]);
+    }
+
+    #[Route('/add', name: 'app_data_add', methods: ['GET', 'POST'])]
+    public function add(Request $request)
+    {
+        $addForm = $this->createForm(EditVehicleDataType::class, null);
+        $addForm->handleRequest($request);
+
+        if($addForm->isSubmitted() and $addForm->isValid()) {
+            $this->vehicleDataRepository->save($addForm->getData(), true);
+
+            $this->addFlash('success', "Donnée ajoutée avec succès");
+
+            return $this->redirectToRoute('app_data');
+        }
+
+        return $this->render('data/add.html.twig', [
+            'addForm'=> $addForm->createView(),
         ]);
     }
 

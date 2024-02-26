@@ -24,18 +24,26 @@
             {% endfor %}
         {% endfor %}
 
-        {{ form_start(importExcelForm) }}
+        <div class="row p-5">
+            <div class="col-md-10">
+                {{ form_start(importExcelForm) }}
 
-        <div class="input-group p-5">
-            {{ form_widget(importExcelForm.file, { 'attr': {'accept': '.xlsx, .xls'} }) }}
-            <button class="btn btn-secondary" type="submit">Importer</button>
+                <div class="input-group">
+                    {{ form_widget(importExcelForm.file, { 'attr': {'accept': '.xlsx, .xls'} }) }}
+                    <button class="btn btn-secondary" type="submit">Importer</button>
+                </div>
+
+                <div class="text-bg-warning">
+                    {{ form_errors(importExcelForm) }}
+                </div>
+
+                {{ form_end(importExcelForm) }}
+            </div>
+            <div class="col-md-2">
+                <a href="{{ path('app_data_add') }}" class="btn btn-success">Ajouter une ligne</a>
+            </div>
         </div>
 
-        <div class="text-bg-warning">
-            {{ form_errors(importExcelForm) }}
-        </div>
-
-        {{ form_end(importExcelForm) }}
 
         <div class="row p-5">
             <div class="col-md-6">

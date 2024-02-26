@@ -50,15 +50,16 @@ class EditVehicleDataType extends AbstractType
                     'class' => 'form-control'
                 ],
             ])
-            ->add('libelleCivilite', TextType::class, [
+            ->add('libelleCivilite', ChoiceType::class, array(
                 'required' => false,
                 'row_attr' => [
                     'class' => 'p-3'
                 ],
                 'attr'        => [
-                    'class' => 'form-control'
+                    'class' => 'form-select'
                 ],
-            ])
+                'choices'     => VehicleData::LIBELLECIVILITE_CHOICE,
+            ))
             ->add('proprietaireActuelDuVehicule', TextType::class, [
                 'required' => false,
                 'row_attr' => [
@@ -86,7 +87,7 @@ class EditVehicleDataType extends AbstractType
                 ],
             ])
             ->add('numeroEtNomDeLaVoie', TextType::class, [
-                'required' => false,
+                'required' => true,
                 'row_attr' => [
                     'class' => 'p-3'
                 ],
@@ -237,8 +238,9 @@ class EditVehicleDataType extends AbstractType
                 ],
                 'choices'     => VehicleData::TYPEPROSPECT_CHOICE,
             ))
-            ->add('kilometrage', IntegerType::class, [
+            ->add('kilometrage', NumberType::class, [
                 'required' => false,
+                'empty_data' => 0,
                 'row_attr' => [
                     'class' => 'p-3'
                 ],

@@ -19,6 +19,12 @@ class VehicleData
         'SOCIETE' => 'SOCIETE'
     ];
 
+    CONST LIBELLECIVILITE_CHOICE = [
+        "Mr" => "Mr",
+        "Mme" => "Mme",
+        "Ste" => "Ste"
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -100,7 +106,7 @@ class VehicleData
     private ?string $typeDeProspect = null;
 
     #[ORM\Column]
-    private ?float $kilometrage = null;
+    private ?float $kilometrage = 0;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $libelleEnergieEnerg = null;
