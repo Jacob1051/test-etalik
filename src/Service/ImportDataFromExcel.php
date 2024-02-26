@@ -76,6 +76,7 @@ class ImportDataFromExcel extends ImportExcelService
         $arrangedCol = [];
 
         $countInserted = 0;
+        $totalRow = 0;
 
         foreach ($headers as $index => $title) {
             $tempCol = $this->getValidColumnIndex($title);
@@ -89,6 +90,7 @@ class ImportDataFromExcel extends ImportExcelService
         foreach ($reader->getSheetIterator() as $sheet) {
             foreach ($sheet->getRowIterator() as $rowIndex => $row) {
                 if($rowIndex > 1) {
+                    $totalRow++;
                     $colIndex = 0;
 
                     try {
@@ -128,7 +130,7 @@ class ImportDataFromExcel extends ImportExcelService
         if ($countInserted == 0) {
             $errorMessages[] = 'Aucune donnée enregistrée, veuillez vérifier le fichier s\'il vous plaît';
         }else{
-            $successMessages[] = $countInserted .' donnée(s) enregistrée(s) avec succès';
+            $successMessages[] = $countInserted .' sur '.$totalRow.' donnée(s) enregistrée(s) avec succès';
         }
 
         $reader->close();
