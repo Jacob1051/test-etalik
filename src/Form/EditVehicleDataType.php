@@ -239,13 +239,12 @@ class EditVehicleDataType extends AbstractType
                 'choices'     => VehicleData::TYPEPROSPECT_CHOICE,
             ))
             ->add('kilometrage', NumberType::class, [
-                'required' => false,
-                'empty_data' => 0,
+                'required' => true,
                 'row_attr' => [
                     'class' => 'p-3'
                 ],
                 'attr'        => [
-                    'class' => 'form-control'
+                    'class' => 'form-control',
                 ],
             ])
             ->add('libelleEnergieEnerg', TextType::class, [
