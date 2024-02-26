@@ -71,7 +71,7 @@ $(function() {
             orderable: false,
             render: function(data, type, row) {
                 var btn = '<a title="modifier" class="link-dark p-2" href="' + tableListSelector.data('edit-url').replace('id', data) + '"><i class="fa fa-pencil fs-5"></i></a>';
-                btn += '<a title="supprimer" class="link-dark text-danger p-2" onclick="confirm(\'Voulez-vous vraiment supprimer?\')" href="' + tableListSelector.data('delete-url').replace('id', data) + '"><i class="fa fa-trash fs-5"></i></a>';
+                btn += '<a title="supprimer" class="link-dark text-danger p-2" onclick="return confirm(\'Voulez-vous vraiment supprimer?\')" href="' + tableListSelector.data('delete-url').replace('id', data) + '"><i class="fa fa-trash fs-5"></i></a>';
 
                 return btn;
             }

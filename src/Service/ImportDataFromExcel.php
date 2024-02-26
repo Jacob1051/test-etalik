@@ -120,7 +120,7 @@ class ImportDataFromExcel extends ImportExcelService
 
                         $countInserted += 1;
                     } catch (\Throwable $exception) {
-                        $errorMessages[] = sprintf('Ligne %s: Donnée "%s" invalide', ($rowIndex+1), self::POSSIBLE_COLUMN_TITLE[$colIndex]);
+                        $errorMessages[] = sprintf('Ligne %s: Donnée "%s" invalide', $rowIndex, self::POSSIBLE_COLUMN_TITLE[$colIndex]);
                         continue;
                     }
                 }
